@@ -1,7 +1,6 @@
 package com.hack.fooapp.payload;
 
 import com.google.gson.annotations.SerializedName;
-import com.hack.fooapp.payload.Connector;
 
 import java.util.List;
 

@@ -25,8 +25,12 @@ import okhttp3.Response;
 
 public class MainActivity extends AppCompatActivity {
 
-    AppCompatButton reloadBtn;
     AppCompatEditText configUrlEt;
+    AppCompatButton reloadBtn;
+
+    AppCompatEditText cardInputEt;
+    AppCompatButton getCardsBtn;
+
     private SharedPreferences sPref;
     private Gson gson;
     private Activity activity;
@@ -43,7 +47,12 @@ public class MainActivity extends AppCompatActivity {
         reloadBtn = findViewById(R.id.bd_reload_btn);
         configUrlEt = findViewById(R.id.bd_config_url_et);
 
+        cardInputEt = findViewById(R.id.bd_card_input_et);
+        getCardsBtn = findViewById(R.id.bd_get_cards_btn);
+
         configUrlEt.setText(getConfigUrl());
+
+        // Load connector configurations.
         reloadBtn.setOnClickListener(v -> {
             RequestTask task = new RequestTask();
             task.setRequestTaskListener(new RequestTask.RequestTaskListener() {
@@ -65,17 +74,38 @@ public class MainActivity extends AppCompatActivity {
 
             printSPref();
         });
+
+        // Card request.
+        getCardsBtn.setOnClickListener(v -> {
+            String cardToken =  cardInputEt.getText().toString();
+            // ToDo: make a card request and get json on the call back interface.
+            MFRequestTask cardRequestTask = new MFRequestTask(cardToken, getConnectors());
+            cardRequestTask.setRequestTaskListener(new MFRequestTask.RequestTaskListener() {
+                @Override
+                public void onCardRequestSuccess(String cardResponse) {
+                    // Send this card response to web view.
+                }
+            });
+            cardRequestTask.execute();
+        });
+    }
+
+    private List<Connector> getConnectors() {
+        String respnseString = sPref.getString("connectors", null);
+        if (respnseString == null) {
+            return null;
+        }
+        Type listType = new TypeToken<ArrayList<Connector>>(){}.getType();
+        return gson.fromJson(
+                respnseString, listType);
     }
 
     void printSPref() {
-        String respnseString = sPref.getString("connectors", null);
-        if (respnseString == null) {
+        List<Connector> connectors = getConnectors();
+
+        if (connectors == null) {
             return;
         }
-        Type listType = new TypeToken<ArrayList<Connector>>(){}.getType();
-        List<Connector> connectors = gson.fromJson(
-                respnseString, listType);
-
         System.out.println("Connectors read from shared pref.");
         for (Connector item : connectors) {
             System.out.println(item.toString());

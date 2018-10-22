@@ -21,4 +21,23 @@
         android:text="Reload config"
         android:layout_below="@+id/bd_config_url_et"/>
 
+
+    <android.support.v7.widget.AppCompatEditText
+        android:id="@+id/bd_card_input_et"
+        android:layout_width="200dp"
+        android:layout_height="60dp"
+        android:layout_below="@id/bd_reload_btn"
+        android:layout_marginTop="25dp"
+        android:layout_centerHorizontal="true"
+        android:hint="Enter card input" />
+
+    <android.support.v7.widget.AppCompatButton
+        android:id="@+id/bd_get_cards_btn"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/bd_card_input_et"
+        android:layout_centerHorizontal="true"
+        android:layout_margin="10dp"
+        android:text="Get cards"/>
+
 </RelativeLayout>

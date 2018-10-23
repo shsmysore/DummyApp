@@ -17,7 +17,9 @@ import com.hack.fooapp.payload.Connector;
 import java.io.IOException;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
@@ -79,15 +81,37 @@ public class MainActivity extends AppCompatActivity {
         getCardsBtn.setOnClickListener(v -> {
             String cardToken =  cardInputEt.getText().toString();
             // ToDo: make a card request and get json on the call back interface.
-            MFRequestTask cardRequestTask = new MFRequestTask(cardToken, getConnectors());
-            cardRequestTask.setRequestTaskListener(new MFRequestTask.RequestTaskListener() {
+            MFCardRequestTask cardRequestTask = new MFCardRequestTask(cardToken, getConnectors());
+            cardRequestTask.setRequestTaskListener(new MFCardRequestTask.RequestTaskListener() {
                 @Override
                 public void onCardRequestSuccess(String cardResponse) {
-                    // Send this card response to web view.
+                    // Send this card-response to web view.
                 }
             });
             cardRequestTask.execute();
         });
+    }
+
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+
+        // Card action.
+        String actionUrl = "http://6681bc1a.ngrok.io/api/v1/issues/235720/comment";
+        Map<String, String> params = new HashMap<>();
+        params.put("body", "Comment from Android app");
+        MFCardActionTask actionTask = new MFCardActionTask(actionUrl, params, getConnectors());
+        actionTask.setRequestTaskListener(new MFCardActionTask.RequestTaskListener() {
+            @Override
+            public void onActionSuccess(Integer responseCode) {
+                System.out.println(">> Callback action response : " + responseCode);
+                // Any 2xx response is good to show Toast.
+                // For 4xx or 5xx show Toast as "Action failure".
+            }
+        });
+        //actionTask.execute();
+
     }
 
     private List<Connector> getConnectors() {

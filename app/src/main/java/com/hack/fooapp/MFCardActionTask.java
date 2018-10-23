@@ -59,10 +59,15 @@ public class MFCardActionTask extends AsyncTask<Object, String, Integer> {
 
     @Override
     protected Integer doInBackground(Object... objects) {
-        String connUrl = connectors.get(0).getUrl();
-        String baseUrl = connectors.get(0).getxBaseUrl();
-        String xAuth = connectors.get(0).getxAuthorization();
-        System.out.println("Header values : "+ connUrl + "\n" + baseUrl + "\n" + xAuth);
+        Integer responseCode = 500;
+        Connector connector = getReleventConnector();
+        if (connector == null) {
+            System.out.println(">> Warning : Didn't find a relevant connector.");
+        }
+        String connUrl = connector.getUrl();
+        String baseUrl = connector.getxBaseUrl();
+        String xAuth = connector.getxAuthorization();
+        System.out.println("Connector config values : "+ connUrl + "\n" + baseUrl + "\n" + xAuth);
         Headers headers = new Headers.Builder()
                 .add("Authorization", VIDM_TOKEN)
                 .add("X-Connector-Base-Url", baseUrl)
@@ -71,15 +76,26 @@ public class MFCardActionTask extends AsyncTask<Object, String, Integer> {
                 .add("Content-Type", "application/x-www-form-urlencoded")
                 .build();
 
-        Gson gson = new Gson();
-
-        Integer responseCode = 500;
         try {
             responseCode = doPostRequest(actionUrl, headers, formItems);
         } catch (Exception e) {
             e.printStackTrace();
         }
         return responseCode;
+    }
+
+    // Don't make it public.
+    private Connector getReleventConnector() {
+        if (actionUrl == null) {
+            System.out.println("Action url is null.");
+            return null;
+        }
+        for (Connector connector: connectors) {
+            if (actionUrl.startsWith(connector.getUrl())) {
+                return connector;
+            }
+        }
+        return null;
     }
 
     @Override

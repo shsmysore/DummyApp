@@ -100,7 +100,7 @@ public class MainActivity extends AppCompatActivity {
         // Card action.
         String actionUrl = "http://6681bc1a.ngrok.io/api/v1/issues/235720/comment";
         Map<String, String> params = new HashMap<>();
-        params.put("body", "Comment from Android app");
+        params.put("body", "Comment from Foo app.");
         MFCardActionTask actionTask = new MFCardActionTask(actionUrl, params, getConnectors());
         actionTask.setRequestTaskListener(new MFCardActionTask.RequestTaskListener() {
             @Override
@@ -110,7 +110,7 @@ public class MainActivity extends AppCompatActivity {
                 // For 4xx or 5xx show Toast as "Action failure".
             }
         });
-        //actionTask.execute();
+        actionTask.execute();
 
     }
 

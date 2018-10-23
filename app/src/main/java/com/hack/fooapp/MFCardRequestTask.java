@@ -3,14 +3,18 @@ package com.hack.fooapp;
 import android.os.AsyncTask;
 
 import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 import com.hack.fooapp.payload.CardRequestBody;
 import com.hack.fooapp.payload.Connector;
 
 import java.io.IOException;
+import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
@@ -52,9 +56,14 @@ public class MFCardRequestTask extends AsyncTask<Object, String, String> {
 
     @Override
     protected String doInBackground(Object... objects) {
-        String connUrl = connectors.get(0).getUrl();
-        String baseUrl = connectors.get(0).getxBaseUrl();
-        String xAuth = connectors.get(0).getxAuthorization();
+        String response = null;
+        Connector connector = getReleventConnector();
+        if (connector == null) {
+            return response;
+        }
+        String connUrl = connector.getUrl();
+        String baseUrl = connector.getxBaseUrl();
+        String xAuth = connector.getxAuthorization();
         System.out.println("Header values : "+ connUrl + "\n" + baseUrl + "\n" + xAuth);
         Headers headers = new Headers.Builder()
                             .add("Authorization", VIDM_TOKEN)
@@ -73,13 +82,45 @@ public class MFCardRequestTask extends AsyncTask<Object, String, String> {
         String reqBodyJson = gson.toJson(cardRequestBody);
         System.out.println(">> Req body Json : "+ reqBodyJson);
 
-        String response = null;
+
         try {
             response = doPostRequest(connUrl + "cards/requests", headers, reqBodyJson);
         } catch (Exception e) {
             e.printStackTrace();
         }
         return response;
+    }
+
+    public Connector getReleventConnector() {
+        Gson gson = new Gson();
+        if (token == null) {
+            System.out.println("Token is null.");
+            return null;
+        }
+        // token = "APF-1404"
+        for (Connector connector: connectors) {
+            Map<String, Object> fieldMap = connector.getFields();
+            // Try to match regex on the field map.
+            for (String fItemKey: fieldMap.keySet()) {
+                Object fObject = fieldMap.get(fItemKey);
+                Type mapType = new TypeToken<HashMap<String, String>>(){}.getType();
+                Map<String, String> fMap = gson.fromJson(gson.toJson(fObject), mapType);
+                String regex = fMap.get("regex");
+                System.out.println("Regex : "+ regex);
+                if (regex != null) {
+                    Pattern pathPattern = Pattern.compile(regex);
+                    Matcher matcher = pathPattern.matcher(token);
+                    if (matcher.matches()) {
+                        System.out.println(">> Regex matched item : "+ matcher.group(1));
+                        return connector;
+                    } else {
+                        System.out.println(">> Regex matched item : NO MATCH on token.");
+                    }
+                }
+
+            }
+        }
+        return null;
     }
 
     @Override
